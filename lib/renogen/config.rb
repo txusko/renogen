@@ -5,7 +5,7 @@ module Renogen
   # Stores configuratin values to be used by the libary
   class Config
     include Singleton
-    attr_accessor :single_line_format, :input_source, :output_format, :supported_keys, :changelog_path, :default_headings
+    attr_accessor :single_line_format, :input_source, :output_format, :supported_keys, :changelog_path, :default_headings, :validate
 
     def initialize
       config_file = load_yaml_config
@@ -15,6 +15,7 @@ module Renogen
       self.output_format = config_file['output_format'] || 'markdown'.freeze
       self.changelog_path = config_file['changelog_path'] || './change_log'.freeze
       self.default_headings = config_file['default_headings'] || %w(Summary Detailed Tasks).freeze
+      self.validate = load_validate_config
     end
 
 
@@ -33,6 +34,16 @@ module Renogen
         {}
       end
     end
+
+    def load_validate_config
+      filename = '.renoval'
+      return unless File.file?(filename)
+      config_file = load_yaml_config(filename)
+      [
+        url: config_file['url'] || 'https://jira.sage.com/browse/'.freeze,
+        bug_ticket: config_file['bug_ticket'] || 'AC-'.freeze,
+        squad_ticket: config_file['squad_ticket'] || ''.freeze
+      ]
+    end
   end
 end
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'renogen/cli'
+require_relative '../lib/renogen/cli'
 
 Renogen::Cli.run(ARGV)

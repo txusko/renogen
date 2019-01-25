@@ -1,9 +1,10 @@
-require 'renogen'
+require_relative '../renogen'
+require_relative '../renoval'
 
 module Renogen
   # Command line interface helpers
   module Cli
-    require 'renogen/cli/param_parser'
+    require_relative 'cli/param_parser'
 
     # Execute the program via command line
     # Renogen exceptions will be rescued and printed
@@ -11,6 +12,7 @@ module Renogen
     def self.run(args)
       return init if args.first == 'init'
       return new_ticket(args[1]) if args.first == 'new'
+      return validate_ticket(args[1]) if args.first == 'validate'
 
       param_parser = ParamParser.new(args)
       version, options = param_parser.parse
@@ -75,6 +77,24 @@ module Renogen
         end
       end
       puts "Created '#{file_path}'"
+    end
+
+    # Validate the provided file
+    #
+    # @param ticket_name [String]
+    def self.validate_ticket(ticket_name)
+      raise 'You need to provide a ticket_name' if ticket_name.nil?
+      file_path = File.join(Config.instance.changelog_path, 'next', "#{ticket_name}.yml")
+      raise 'The ticket_name provided does not exist' unless File.file?(file_path)
+      puts "Ticket found in '#{file_path}'"
+      begin
+        validator = Renoval::Validator.new(file_path)
+        validator.validate
+        puts "The ticket_name provided '#{file_path}' is valid"
+      rescue Renogen::Exceptions::Base => e
+        puts e.message
+        exit(-1)
+      end
     end
   end
 end
